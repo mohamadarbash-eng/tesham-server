@@ -3,6 +3,7 @@ const CourseDetails = require('./../../models/course-details-model');
 const Reveiws = require('./../../models/reviews-model');
 
 const courseController = {
+
     postCourse(req, res, next) {
         const course = req.body;
         const courseDetails = req.body && req.body.courseDetails;
@@ -23,6 +24,7 @@ const courseController = {
             next();
         });
     },
+
     getCourses(req, res, next) {
         const {offset, limit} = req.query;
         const courseQuery = Course.find();
@@ -41,6 +43,7 @@ const courseController = {
         });
 
     },
+
     getCoursesCount(req, res, next) {
         Course.estimatedDocumentCount().then((courseCount) => {
             res.status(200).json({
@@ -53,6 +56,7 @@ const courseController = {
         });
 
     },
+
     getCourseByID(req, res, next) {
         const {id} = req.params;
         Course.findById(id).then((course) => {
@@ -62,6 +66,7 @@ const courseController = {
             next();
         }).catch((error) => res.status(400).json({error}));
     },
+
     getCourseDetails(req, res, next) {
         const {courseName} = req.params;
         Course.findOne({courseName: courseName}).populate(
@@ -69,12 +74,18 @@ const courseController = {
                 path: 'courseDetails',
                 populate: {path: 'reviews'}
             }).then((course) => {
-            res.status(200).json(
-                course
-            );
-            next();
+                if (course) {
+                    res.status(200).json(
+                        course
+                    );
+                    next();
+                } else {
+                    res.status(404).json({error: 404, message: 'BAD_GATEWAY'});
+                    next();
+                }
         }).catch((error) => res.status(400).json({error}));
     },
+
     deleteCourse(req, res, next) {
         const {id} = req.params;
         Course.findByIdAndDelete(id).then((result) => {
@@ -83,6 +94,7 @@ const courseController = {
         })
 
     },
+
     updateCourse(req, res, next) {
         const {id} = req.params;
         const imageUrl = req.file ? `/assets/images/${req.file.filename}`
